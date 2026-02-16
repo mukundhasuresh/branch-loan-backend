@@ -2,8 +2,12 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
+const connectDB = require("./src/config/db");
 
 const app = express();
+
+// connect database
+connectDB();
 
 // middlewares
 app.use(express.json());
@@ -14,7 +18,6 @@ app.use(cors({
   credentials: true
 }));
 
-// health check
 app.get("/", (req, res) => {
   res.send("Branch Loan API running 🚀");
 });
