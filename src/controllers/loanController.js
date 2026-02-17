@@ -1,4 +1,5 @@
 const Loan = require("../models/Loan");
+const FinancialProfile = require("../models/FinancialProfile"); // ✅ NEW
 
 // create loan
 exports.createLoan = async (req, res) => {
@@ -54,11 +55,28 @@ exports.reviewLoan = async (req, res) => {
   }
 };
 
-// admin approve
+// admin approve (✅ risk-based)
 exports.approveLoan = async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
 
+    if (!loan) {
+      return res.status(404).json({ message: "Loan not found" });
+    }
+
+    // ✅ Get financial profile
+    const profile = await FinancialProfile.findOne({
+      user: loan.createdBy,
+    });
+
+    // ✅ Risk check
+    if (profile && profile.creditScore < 600) {
+      return res
+        .status(400)
+        .json({ message: "Loan rejected due to low credit score" });
+    }
+
+    // approve
     loan.status = "approved";
     await loan.save();
 
