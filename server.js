@@ -8,6 +8,7 @@ const connectDB = require("./src/config/db");
 // 👉 import routes
 const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
+const loanRoutes = require("./src/routes/loanRoutes");
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use(cors({
 // 👉 use routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/loan", loanRoutes);
 
 app.get("/", (req, res) => {
   res.send("Branch Loan API running 🚀");
