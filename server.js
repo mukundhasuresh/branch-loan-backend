@@ -26,7 +26,6 @@ connectDB();
 // secure HTTP headers
 app.use(helmet());
 
-
 // rate limiting (anti brute-force)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -42,9 +41,21 @@ app.use(cookieParser());
 // 👉 manual Mongo injection protection
 app.use(sanitizeMiddleware);
 
+// ✅ Production-ready CORS
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  "http://localhost:5173",
+];
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL,
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS blocked"));
+      }
+    },
     credentials: true,
   })
 );
