@@ -4,9 +4,6 @@ const express = require("express");
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const helmet = require("helmet");
-const mongoSanitize = require("express-mongo-sanitize");
-
-const xss = require("xss-clean");
 const rateLimit = require("express-rate-limit");
 
 const connectDB = require("./src/config/db");
@@ -15,6 +12,9 @@ const connectDB = require("./src/config/db");
 const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const loanRoutes = require("./src/routes/loanRoutes");
+
+// 👉 custom sanitize middleware
+const sanitizeMiddleware = require("./src/middlewares/sanitizeMiddleware");
 
 const app = express();
 
@@ -26,11 +26,6 @@ connectDB();
 // secure HTTP headers
 app.use(helmet());
 
-// prevent MongoDB injection
-app.use(mongoSanitize());
-
-// prevent XSS
-app.use(xss());
 
 // rate limiting (anti brute-force)
 const limiter = rateLimit({
@@ -43,6 +38,9 @@ app.use(limiter);
 
 app.use(express.json());
 app.use(cookieParser());
+
+// 👉 manual Mongo injection protection
+app.use(sanitizeMiddleware);
 
 app.use(
   cors({
