@@ -1,6 +1,7 @@
 const Loan = require("../models/Loan");
 const FinancialProfile = require("../models/FinancialProfile");
-const { logAction } = require("../services/auditService"); // ✅ NEW
+const { logAction } = require("../services/auditService");
+const { calculateFraudScore } = require("../services/fraudService"); 
 
 // create loan
 exports.createLoan = async (req, res) => {
@@ -14,6 +15,20 @@ exports.createLoan = async (req, res) => {
       branch: req.user.branch,
       createdBy: req.user._id,
     });
+
+    // Fraud Detection
+    const fraudScore = await calculateFraudScore(
+      req.user._id,
+      amount
+    );
+
+    loan.fraudScore = fraudScore;
+
+    if (fraudScore > 50) {
+      loan.fraudFlag = true;
+    }
+
+    await loan.save();
 
     // ✅ audit log
     await logAction({
@@ -126,7 +141,7 @@ exports.rejectLoan = async (req, res) => {
     loan.status = "rejected";
     await loan.save();
 
-    // ✅ audit log
+    // audit log
     await logAction({
       user: req.user._id,
       action: "REJECT_LOAN",
