@@ -34,13 +34,14 @@ exports.register = async (req, res) => {
   }
 };
 
-// login
+// 🔥 LOGIN (final production safe)
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user)
+      return res.status(400).json({ message: "Invalid credentials" });
 
     const match = await bcrypt.compare(password, user.password);
     if (!match)
@@ -48,12 +49,11 @@ exports.login = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    // ✅ Production-ready cookie settings
+    // ✅ Always secure cookie (works on Render HTTPS)
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite:
-        process.env.NODE_ENV === "production" ? "none" : "lax",
+      secure: true,
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -66,8 +66,13 @@ exports.login = async (req, res) => {
   }
 };
 
-// logout
+// 🔥 LOGOUT
 exports.logout = (req, res) => {
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
+
   res.json({ message: "Logged out" });
 };
