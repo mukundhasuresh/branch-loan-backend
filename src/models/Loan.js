@@ -6,6 +6,16 @@ const loanSchema = new mongoose.Schema(
     amount: { type: Number, required: true },
     purpose: { type: String, required: true },
 
+    // 🚨 Fraud Detection Fields
+    fraudScore: {
+      type: Number,
+      default: 0,
+    },
+    fraudFlag: {
+      type: Boolean,
+      default: false,
+    },
+
     status: {
       type: String,
       enum: ["pending", "manager_approved", "approved", "rejected"],
