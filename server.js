@@ -62,6 +62,8 @@ app.use(
   })
 );
 
+app.use(express.static("public"));
+
 // 👉 routes
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
