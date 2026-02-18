@@ -1,7 +1,9 @@
 const Loan = require("../models/Loan");
 const FinancialProfile = require("../models/FinancialProfile");
+const User = require("../models/User"); 
 const { logAction } = require("../services/auditService");
-const { calculateFraudScore } = require("../services/fraudService"); 
+const { calculateFraudScore } = require("../services/fraudService");
+const { sendNotification } = require("../services/notificationService"); 
 
 // create loan
 exports.createLoan = async (req, res) => {
@@ -16,6 +18,13 @@ exports.createLoan = async (req, res) => {
       createdBy: req.user._id,
     });
 
+    // 🔹 Notification to user
+    await sendNotification(
+      req.user._id,
+      "Loan application submitted",
+      "loan"
+    );
+
     // Fraud Detection
     const fraudScore = await calculateFraudScore(
       req.user._id,
@@ -26,6 +35,17 @@ exports.createLoan = async (req, res) => {
 
     if (fraudScore > 50) {
       loan.fraudFlag = true;
+
+      // 🔹 Fraud alert to admins
+      const admins = await User.find({ role: "admin" });
+
+      for (const admin of admins) {
+        await sendNotification(
+          admin._id,
+          "Fraud risk detected in loan",
+          "fraud"
+        );
+      }
     }
 
     await loan.save();
@@ -71,7 +91,7 @@ exports.reviewLoan = async (req, res) => {
       return res.status(404).json({ message: "Loan not found" });
     }
 
-    // 🚨 STEP 6.4 – Block High Risk Loans
+    // 🚨 Block High Risk Loans
     if (loan.fraudFlag) {
       return res.status(400).json({
         message: "Loan flagged for fraud. Manual review required.",
@@ -98,7 +118,7 @@ exports.reviewLoan = async (req, res) => {
   }
 };
 
-// admin approve (risk-based)
+// admin approve
 exports.approveLoan = async (req, res) => {
   try {
     const loan = await Loan.findById(req.params.id);
