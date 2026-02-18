@@ -30,7 +30,7 @@ exports.createLoan = async (req, res) => {
 
     await loan.save();
 
-    // ✅ audit log
+    // audit log
     await logAction({
       user: req.user._id,
       action: "CREATE_LOAN",
@@ -71,12 +71,19 @@ exports.reviewLoan = async (req, res) => {
       return res.status(404).json({ message: "Loan not found" });
     }
 
+    // 🚨 STEP 6.4 – Block High Risk Loans
+    if (loan.fraudFlag) {
+      return res.status(400).json({
+        message: "Loan flagged for fraud. Manual review required.",
+      });
+    }
+
     loan.status = "manager_approved";
     loan.reviewedBy = req.user._id;
 
     await loan.save();
 
-    // ✅ audit log
+    // audit log
     await logAction({
       user: req.user._id,
       action: "REVIEW_LOAN",
@@ -114,7 +121,7 @@ exports.approveLoan = async (req, res) => {
     loan.status = "approved";
     await loan.save();
 
-    // ✅ audit log
+    // audit log
     await logAction({
       user: req.user._id,
       action: "APPROVE_LOAN",
