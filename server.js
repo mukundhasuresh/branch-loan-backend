@@ -13,7 +13,8 @@ const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
 const loanRoutes = require("./src/routes/loanRoutes");
 const financialRoutes = require("./src/routes/financialRoutes");
-const documentRoutes = require("./src/routes/documentRoutes"); // ✅ NEW
+const documentRoutes = require("./src/routes/documentRoutes"); 
+const notificationRoutes = require("./src/routes/notificationRoutes");
 
 // 👉 custom sanitize middleware
 const sanitizeMiddleware = require("./src/middlewares/sanitizeMiddleware");
@@ -69,7 +70,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/loan", loanRoutes);
 app.use("/api/financial", financialRoutes);
-app.use("/api/document", documentRoutes); // ✅ NEW
+app.use("/api/document", documentRoutes); 
+app.use("/api/notification", notificationRoutes);
 
 app.get("/", (req, res) => {
   res.send("Branch Loan API running 🚀");
