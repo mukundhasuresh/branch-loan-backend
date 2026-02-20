@@ -1,9 +1,9 @@
 const Loan = require("../models/Loan");
 const FinancialProfile = require("../models/FinancialProfile");
-const User = require("../models/User"); 
+const User = require("../models/User");
 const { logAction } = require("../services/auditService");
 const { calculateFraudScore } = require("../services/fraudService");
-const { sendNotification } = require("../services/notificationService"); 
+const { sendNotification } = require("../services/notificationService");
 
 // create loan
 exports.createLoan = async (req, res) => {
@@ -178,6 +178,18 @@ exports.rejectLoan = async (req, res) => {
     });
 
     res.json(loan);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// 🔥 get fraud loans (admin only)
+exports.getFraudLoans = async (req, res) => {
+  try {
+    const loans = await Loan.find({ fraudFlag: true })
+      .populate("createdBy", "name email");
+
+    res.json(loans);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
