@@ -7,6 +7,15 @@ const sendNotification = async (user, message, type) => {
       message,
       type,
     });
+
+    // Real-time notification emit
+    if (global.io) {
+      global.io.emit("notification", {
+        userId: user,
+        message,
+        type,
+      });
+    }
   } catch (error) {
     console.error("Notification error:", error);
   }
