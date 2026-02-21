@@ -49,3 +49,20 @@ exports.branchStats = async (req, res) => {
 
   res.json(result);
 };
+
+// fraud analytics
+exports.fraudStats = async (req, res) => {
+  try {
+    const total = await Loan.countDocuments();
+
+    const fraud = await Loan.countDocuments({
+      fraudFlag: true,
+    });
+
+    const safe = total - fraud;
+
+    res.json({ total, fraud, safe });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
