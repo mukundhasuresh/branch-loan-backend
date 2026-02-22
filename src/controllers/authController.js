@@ -34,7 +34,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// 🔥 LOGIN (final production safe)
+// LOGIN
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -49,10 +49,10 @@ exports.login = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    // ✅ Always secure cookie (works on Render HTTPS)
+    // production-safe cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
+      secure: process.env.NODE_ENV === "production",
       sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -66,11 +66,11 @@ exports.login = async (req, res) => {
   }
 };
 
-// 🔥 LOGOUT
+// LOGOUT
 exports.logout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "none",
   });
 
